@@ -23,20 +23,15 @@ class PokedexController extends AbstractController{
     	15 => ["nombre" => "Beedril", "numero" => "0015", "Tipo" => "bicho/veneno"]
 
     ];
+
     #[Route('/pokedex/{codigo}', name:"ficha_pokedex")]
         public function ficha($codigo): Response{
             $resultado = ($this->pokemons[$codigo] ?? null);
 
-            if($resultado){
-                $html = "<ul>";
-                    $html .= "<li>" . $codigo . "</li>";
-                    $html .= "<li>" . $resultado['nombre'] . "</li>";
-                    $html .= "<li>" . $resultado['numero'] . "</li>";
-                    $html .= "<li>" . $resultado['Tipo'] . "</li>";
-                $html .= "</ul>";
-                return new Response("<html><body>$html</body>");
-            }else
-            return new Response("<html><body>Pokemon $codigo no encontrado</body>");
+            return $this->render('ficha_pokedex.html.twig', [
+            'pokemon' => $resultado
+            ]);
+            
         }
 
     #[Route("/pokedex/buscar/{texto}", name:"buscar_pokemon")]
@@ -47,21 +42,12 @@ class PokedexController extends AbstractController{
             }
         );
 
-        if (count($resultados)){
-            if($resultados){
-                $html = "<ul>";
-                foreach($resultados as $id => $resultado){
-                    $html .= "<li>" . $id . "</li>";
-                    $html .= "<li>" . $resultado['nombre'] . "</li>";
-                    $html .= "<li>" . $resultado['numero'] . "</li>";
-                    $html .= "<li>" . $resultado['Tipo'] . "</li>";
-                }
-                $html .= "</ul>";
-                return new Response("<html><body>$html</body>");
-            }else
-            return new Response("<html><body>No se encontró ningún pokemon</body>");
+        return $this->render('lista_pokemons.html.twig', [
+            'pokemons' => $resultados
+        ]);
+            
         }
 
         }
-    }
+    
 ?>

@@ -1,0 +1,12 @@
+
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Ficha del pokemon</h1>
+    {% if pokemons %}
+        {% for pokemon in pokemons %}
+            {{ include ('partials/datos_pokemons.html.twig', {'pokemon': pokemon})}}
+        {% endfor %}
+    {% else %}
+        <p>Pokemon no encontrado</p>
+    {% endif %}
+{% endblock %}

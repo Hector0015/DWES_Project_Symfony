@@ -11,6 +11,6 @@ class PageController extends AbstractController
     #[Route('/', name: 'inicio')]
     public function index(): Response
     {
-        return new Response('Bienvenido a una pequeña pokedex');
+        return $this->render('inicio.html.twig');
     }
 }
