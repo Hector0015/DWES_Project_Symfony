@@ -1,10 +1,13 @@
 <?php 
 namespace App\Controller;
 
+use App\Entity\Pokemon;
+use Doctrine\Persistence\ManagerRegistry;
 use phpDocumentor\Reflection\PseudoTypes\False_;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
 class PokedexController extends AbstractController{
     private $pokemons = [
@@ -23,6 +26,25 @@ class PokedexController extends AbstractController{
     	15 => ["nombre" => "Beedril", "numero" => "0015", "Tipo" => "bicho/veneno"]
 
     ];
+
+    #[Route('/pokedex/insertar', name:'insertar_pokemon')]
+        public function insertar(ManagerRegistry $doctrine){
+            $entityManager = $doctrine->getManager();
+            foreach($this->pokemons as $c){
+                $pokemon = new Pokemon();
+                $pokemon->setNombre($c["nombre"]);
+                $pokemon->setNumero($c["numero"]);
+                $pokemon->setTipo($c["Tipo"]);
+                $entityManager->persist($pokemon);
+            }
+
+            try{
+                $entityManager->flush();
+                return new Response("Pokemon insertado");
+            }catch (\Exception $e) {
+                return new Response("Error insertando objetos");
+            }
+        }
 
     #[Route('/pokedex/{codigo}', name:"ficha_pokedex")]
         public function ficha($codigo): Response{
