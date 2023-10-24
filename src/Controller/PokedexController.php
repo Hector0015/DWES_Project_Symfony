@@ -28,6 +28,28 @@ class PokedexController extends AbstractController{
 
     ];
 
+    #[Route('/pokedex/insertarConRegion', name:'insertar_con_region_pokemon')]
+    public function insertarConRegion(ManagerRegistry $doctrine): Response{
+        $entityManager = $doctrine->getManager();
+        $region = new Region();
+
+        $region->setNombre("Kanto");
+        $pokemon = new Pokemon();
+
+        $pokemon->setNombre("Insercion de prueba con region, Pikachu");
+        $pokemon->setNumero("900220022");
+        $pokemon->setTipo("electrico");
+        $pokemon->setRegion($region);
+
+        $entityManager->persist($region);
+        $entityManager->persist($pokemon);
+
+        $entityManager->flush();
+        return $this->render('ficha_pokedex.html.twig', [
+            'pokemon' => $pokemon
+        ]);
+    }
+
 
     #[Route('/pokedex/delete/{id}', name:'eliminar_pokemon')]
     public function delete(ManagerRegistry $doctrine, $id): Response{
