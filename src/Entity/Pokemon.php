@@ -22,6 +22,10 @@ class Pokemon
     #[ORM\Column(length: 255)]
     private ?string $Tipo = null;
 
+    #[ORM\ManyToOne(inversedBy: 'pokemon')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Region $Region = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -59,6 +63,18 @@ class Pokemon
     public function setTipo(string $Tipo): static
     {
         $this->Tipo = $Tipo;
+
+        return $this;
+    }
+
+    public function getRegion(): ?Region
+    {
+        return $this->Region;
+    }
+
+    public function setRegion(?Region $Region): static
+    {
+        $this->Region = $Region;
 
         return $this;
     }

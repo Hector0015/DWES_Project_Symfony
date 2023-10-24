@@ -28,6 +28,28 @@ class PokedexController extends AbstractController{
 
     ];
 
+
+    #[Route('/pokedex/delete/{id}', name:'eliminar_pokemon')]
+    public function delete(ManagerRegistry $doctrine, $id): Response{
+        $entityManager = $doctrine->getManager();
+        $repositorio = $doctrine->getRepository(Pokemon::class);
+        $pokemon = $repositorio->find($id);
+        if($pokemon){
+            try{
+                $entityManager->remove($pokemon);
+                $entityManager->flush();
+                return new Response("Pokemon eliminado");
+            }catch (\Exception $e) {
+                return new Response("Error eliminando objeto");
+            }
+        }else
+        return $this->render('ficha_pokedex.html.twig', [
+            'pokemon' => null
+        ]);
+    }
+
+
+    #[Route('/pokedex/update/{id}', name:'modificar_pokemon')]
     public function update(ManagerRegistry $doctrine, $id, $nombre): Response{
         $entityManager = $doctrine->getManager();
         $repositorio = $doctrine->getRepository(Pokemon::class);
