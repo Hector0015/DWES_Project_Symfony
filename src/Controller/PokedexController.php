@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Pokemon;
 use Doctrine\Persistence\ManagerRegistry;
 use phpDocumentor\Reflection\PseudoTypes\False_;
+use Symfony\Bridge\Twig\Extension\DumpExtension;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,6 +28,26 @@ class PokedexController extends AbstractController{
 
     ];
 
+    public function update(ManagerRegistry $doctrine, $id, $nombre): Response{
+        $entityManager = $doctrine->getManager();
+        $repositorio = $doctrine->getRepository(Pokemon::class);
+        $pokemon = $repositorio->find($id);
+        if ($pokemon){
+            $pokemon->setNombre($nombre);
+            try{
+                $entityManager->flush();
+                return $this->render('ficha_pokedex.html.twig', [
+                    'pokemon' => $pokemon
+                ]);
+            }catch(\Exception $e) {
+                return new Response("Error insertando objetos");
+            }
+        }else
+            return $this->render('ficha_pokedex.html.twig', [
+                'pokemon' => null
+            ]);
+    }
+
     #[Route('/pokedex/insertar', name:'insertar_pokemon')]
         public function insertar(ManagerRegistry $doctrine){
             $entityManager = $doctrine->getManager();
@@ -47,8 +68,9 @@ class PokedexController extends AbstractController{
         }
 
     #[Route('/pokedex/{codigo}', name:"ficha_pokedex")]
-        public function ficha($codigo): Response{
-            $resultado = ($this->pokemons[$codigo] ?? null);
+        public function ficha(ManagerRegistry $doctrine, $codigo): Response{
+            $repositorio = $doctrine->getRepository(Pokemon::class);
+            $resultado = $repositorio->find($codigo);
 
             return $this->render('ficha_pokedex.html.twig', [
             'pokemon' => $resultado
@@ -57,13 +79,10 @@ class PokedexController extends AbstractController{
         }
 
     #[Route("/pokedex/buscar/{texto}", name:"buscar_pokemon")]
-        public function buscar($texto): Response{
-            $resultados = array_filter($this->pokemons,
-            function ($pokemons) use ($texto){
-                return strpos($pokemons["nombre"], $texto) !== FALSE;
-            }
-        );
-
+        public function buscar(ManagerRegistry $doctrine, $texto): Response{
+            $repositorio = $doctrine->getRepository(Pokemon::class);
+            $resultados = $repositorio->findByName($texto);
+            
         return $this->render('lista_pokemons.html.twig', [
             'pokemons' => $resultados
         ]);
