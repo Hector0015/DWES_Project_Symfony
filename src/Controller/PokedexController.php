@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Pokemon;
+use App\Entity\Region;
 use Doctrine\Persistence\ManagerRegistry;
 use phpDocumentor\Reflection\PseudoTypes\False_;
 use Symfony\Bridge\Twig\Extension\DumpExtension;
@@ -27,6 +28,28 @@ class PokedexController extends AbstractController{
     	15 => ["nombre" => "Beedril", "numero" => "0015", "Tipo" => "bicho/veneno"]
 
     ];
+
+    #[Route('/pokedex/insertarSinRegion', name:'insertar_sin_region_pokemon')]
+    public function insertarSinRegion(ManagerRegistry $doctrine): Response{
+        $entityManager = $doctrine->getManager();
+        $repositorio = $doctrine->getRepository(Region::class);
+
+        $region = $repositorio->findOneBy(["nombre" => "Kalos"]);
+
+        $pokemon = new Pokemon();
+
+        $pokemon->setNombre(("Insercion de prueba sin provincia, rattata"));
+        $pokemon->setNumero("900220023");
+        $pokemon->setTipo("Normal");
+        $pokemon->setRegion($region);
+
+        $entityManager->persist($pokemon);
+
+        $entityManager->flush();
+        return $this->render('ficha_pokedex.html.twig', [
+            'pokemon' => $pokemon
+        ]);
+    }
 
     #[Route('/pokedex/insertarConRegion', name:'insertar_con_region_pokemon')]
     public function insertarConRegion(ManagerRegistry $doctrine): Response{

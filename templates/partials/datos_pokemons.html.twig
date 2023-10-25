@@ -1,5 +1,8 @@
 <ul>
     <li><strong>{{pokemon.nombre}}</strong></li>
     <li><strong>Numero</strong>: {{pokemon.numero}}</li>
+    {% if pokemon.region %}
+    <li><stron>Region: </strong>{{pokemon.region.nombre}}</li>
+    {% endif %}
     <li><strong>Tipo</strong>: {{pokemon.Tipo}}</li>
 </ul>
