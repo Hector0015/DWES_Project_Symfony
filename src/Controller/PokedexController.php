@@ -3,12 +3,18 @@ namespace App\Controller;
 
 use App\Entity\Pokemon;
 use App\Entity\Region;
+use Doctrine\ORM\Mapping\Entity;
 use Doctrine\Persistence\ManagerRegistry;
 use phpDocumentor\Reflection\PseudoTypes\False_;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Twig\Extension\DumpExtension;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
 class PokedexController extends AbstractController{
@@ -28,6 +34,63 @@ class PokedexController extends AbstractController{
     	15 => ["nombre" => "Beedril", "numero" => "0015", "Tipo" => "bicho/veneno"]
 
     ];
+
+    #[Route('/pokedex/nuevo', name:'nuevo_pokemon')]
+    public function nuevo(ManagerRegistry $doctrine, Request $request){
+        $pokemon = new Pokemon();
+
+        $formulario = $this->createFormBuilder($pokemon)
+            ->add('nombre', TextType::class)
+            ->add('numero', TextType::class)
+            ->add('tipo', TextType::class, array('label' => 'Tipo/Tipos'))
+            ->add('region', EntityType::class, array(
+                'class' => Region::class,
+                'choice_label' => 'nombre',))
+            ->add('save', SubmitType::class, array('label' => 'Enviar'))
+            ->getForm();
+            $formulario->handleRequest($request);
+
+            if($formulario->isSubmitted() && $formulario->isValid()){
+                $pokemon = $formulario->getData();
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($pokemon);
+                $entityManager->flush();
+                return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getId()]);
+            }
+        
+        return $this->render('nuevo.html.twig', array(
+            'formulario' => $formulario->createView()
+        ));
+    }
+
+    #[Route('/pokedex/editar/{codigo}', name:'editar_pokemon')]
+    public function editar(ManagerRegistry $doctrine, Request $request, $codigo) {
+        $repositorio = $doctrine->getRepository(Pokemon::class);
+        $pokemon = $repositorio->findOneBy(["numero" => $codigo]);
+
+        $formulario = $this->createFormBuilder($pokemon)
+            ->add('nombre', TextType::class)
+            ->add('numero', TextType::class)
+            ->add('tipo', TextType::class, array('label' => 'Tipo/Tipos'))
+            ->add('region', EntityType::class, array(
+                'class' => Region::class,
+                'choice_label' => 'nombre',))
+            ->add('save', SubmitType::class, array('label' => 'Enviar'))
+            ->getForm();
+
+        $formulario->handleRequest($request);
+
+        if($formulario->isSubmitted() && $formulario->isValid()){
+            $pokemon = $formulario->getData();
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($pokemon);
+            $entityManager->flush();
+        }
+        return $this->render('editar.html.twig', array(
+            'formulario' => $formulario->createView()
+        ));
+    }
+
 
     #[Route('/pokedex/insertarSinRegion', name:'insertar_sin_region_pokemon')]
     public function insertarSinRegion(ManagerRegistry $doctrine): Response{
