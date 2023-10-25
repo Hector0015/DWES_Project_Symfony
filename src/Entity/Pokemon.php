@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\PokemonRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PokemonRepository::class)]
 class Pokemon
@@ -14,12 +15,15 @@ class Pokemon
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre es obligatorio')]
     private ?string $nombre = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'El numero es obligatorio')]
     private ?int $numero = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El tipo es obligatorio')]
     private ?string $Tipo = null;
 
     #[ORM\ManyToOne(inversedBy: 'pokemon')]
@@ -36,7 +40,7 @@ class Pokemon
         return $this->nombre;
     }
 
-    public function setNombre(string $nombre): static
+    public function setNombre(?string $nombre): self
     {
         $this->nombre = $nombre;
 
@@ -48,7 +52,7 @@ class Pokemon
         return $this->numero;
     }
 
-    public function setNumero(int $numero): static
+    public function setNumero(?int $numero): self
     {
         $this->numero = $numero;
 
@@ -60,7 +64,7 @@ class Pokemon
         return $this->Tipo;
     }
 
-    public function setTipo(string $Tipo): static
+    public function setTipo(?string $Tipo): self
     {
         $this->Tipo = $Tipo;
 
