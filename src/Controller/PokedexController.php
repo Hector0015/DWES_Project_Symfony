@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Pokemon;
 use App\Entity\Region;
+use App\Form\PokemonType;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\Persistence\ManagerRegistry;
 use phpDocumentor\Reflection\PseudoTypes\False_;
@@ -39,44 +40,7 @@ class PokedexController extends AbstractController{
     public function nuevo(ManagerRegistry $doctrine, Request $request){
         $pokemon = new Pokemon();
 
-        $formulario = $this->createFormBuilder($pokemon)
-            ->add('nombre', TextType::class)
-            ->add('numero', TextType::class)
-            ->add('tipo', TextType::class, array('label' => 'Tipo/Tipos'))
-            ->add('region', EntityType::class, array(
-                'class' => Region::class,
-                'choice_label' => 'nombre',))
-            ->add('save', SubmitType::class, array('label' => 'Enviar'))
-            ->getForm();
-            $formulario->handleRequest($request);
-
-            if($formulario->isSubmitted() && $formulario->isValid()){
-                $pokemon = $formulario->getData();
-                $entityManager = $doctrine->getManager();
-                $entityManager->persist($pokemon);
-                $entityManager->flush();
-                return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getId()]);
-            }
-        
-        return $this->render('nuevo.html.twig', array(
-            'formulario' => $formulario->createView()
-        ));
-    }
-
-    #[Route('/pokedex/editar/{codigo}', name:'editar_pokemon')]
-    public function editar(ManagerRegistry $doctrine, Request $request, $codigo) {
-        $repositorio = $doctrine->getRepository(Pokemon::class);
-        $pokemon = $repositorio->findOneBy(["numero" => $codigo]);
-
-        $formulario = $this->createFormBuilder($pokemon)
-            ->add('nombre', TextType::class)
-            ->add('numero', TextType::class)
-            ->add('tipo', TextType::class, array('label' => 'Tipo/Tipos'))
-            ->add('region', EntityType::class, array(
-                'class' => Region::class,
-                'choice_label' => 'nombre',))
-            ->add('save', SubmitType::class, array('label' => 'Enviar'))
-            ->getForm();
+        $formulario = $this->createForm(PokemonType::class, $pokemon);
 
         $formulario->handleRequest($request);
 
@@ -85,10 +49,39 @@ class PokedexController extends AbstractController{
             $entityManager = $doctrine->getManager();
             $entityManager->persist($pokemon);
             $entityManager->flush();
+            return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getId()]);
         }
-        return $this->render('editar.html.twig', array(
+        return $this->render('nuevo.html.twig', array(
             'formulario' => $formulario->createView()
         ));
+    }
+
+    #[Route('/pokedex/editar/{codigo}', name:'editar_pokemon')]
+    public function editar(ManagerRegistry $doctrine, Request $request, $codigo) {
+        $repositorio = $doctrine->getRepository(Pokemon::class);
+
+        $pokemon = $repositorio->findOneBy(["numero" => $codigo]);
+
+        if($pokemon){
+            $formulario = $this->createForm(PokemonType::class, $pokemon);
+
+            $formulario->handleRequest($request);
+
+            if($formulario->isSubmitted() && $formulario->isValid()) {
+                $pokemon = $formulario->getData();
+                $entityManager = $doctrine->getManager();
+                $entityManager->persist($pokemon);
+                $entityManager->flush();
+                return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getId()]);
+            }
+            return $this->render('nuevo.html.twig', array(
+                'formulario' => $formulario->createView()
+            ));
+        }else{
+            return $this->render('ficha_pokedex.html.twig', [
+                'pokemon' => NULL
+            ]);
+        }
     }
 
 
@@ -141,7 +134,7 @@ class PokedexController extends AbstractController{
     public function delete(ManagerRegistry $doctrine, $id): Response{
         $entityManager = $doctrine->getManager();
         $repositorio = $doctrine->getRepository(Pokemon::class);
-        $pokemon = $repositorio->find($id);
+        $pokemon = $repositorio->findOneBy(["numero" => $id]);
         if($pokemon){
             try{
                 $entityManager->remove($pokemon);
@@ -161,7 +154,7 @@ class PokedexController extends AbstractController{
     public function update(ManagerRegistry $doctrine, $id, $nombre): Response{
         $entityManager = $doctrine->getManager();
         $repositorio = $doctrine->getRepository(Pokemon::class);
-        $pokemon = $repositorio->find($id);
+        $pokemon = $repositorio->findOneBy(["numero" => $id]);
         if ($pokemon){
             $pokemon->setNombre($nombre);
             try{
@@ -200,7 +193,7 @@ class PokedexController extends AbstractController{
     #[Route('/pokedex/{codigo}', name:"ficha_pokedex")]
         public function ficha(ManagerRegistry $doctrine, $codigo): Response{
             $repositorio = $doctrine->getRepository(Pokemon::class);
-            $resultado = $repositorio->find($codigo);
+            $resultado = $repositorio->findOneBy(["numero" => $codigo]);
 
             return $this->render('ficha_pokedex.html.twig', [
             'pokemon' => $resultado
