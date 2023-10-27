@@ -18,7 +18,7 @@ class PokemonType extends AbstractType
         $builder
             ->add('nombre', TextType::class)
             ->add('numero', TextType::class)
-            ->add('tipo', EmailType::class, array('label' => 'Tipo/Tipos'))
+            ->add('tipo', TextType::class, array('label' => 'Tipo/Tipos'))
             ->add('region', EntityType::class, array(
                 'class' => Region::class,
                 'choice_label' => 'nombre',))
