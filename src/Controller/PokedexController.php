@@ -49,7 +49,7 @@ class PokedexController extends AbstractController{
             $entityManager = $doctrine->getManager();
             $entityManager->persist($pokemon);
             $entityManager->flush();
-            return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getId()]);
+            return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getNumero()]);
         }
         return $this->render('nuevo.html.twig', array(
             'formulario' => $formulario->createView()
@@ -72,7 +72,7 @@ class PokedexController extends AbstractController{
                 $entityManager = $doctrine->getManager();
                 $entityManager->persist($pokemon);
                 $entityManager->flush();
-                return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getId()]);
+                return $this->redirectToRoute('ficha_pokedex', ["codigo" => $pokemon->getNumero()]);
             }
             return $this->render('nuevo.html.twig', array(
                 'formulario' => $formulario->createView()
